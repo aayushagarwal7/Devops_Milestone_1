@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  #become_user: root
+  roles:
+    - ProvisionCheckboxInstance
+- hosts: checkbox
+  roles: 
+    - ConfigureCheckbox

@@ -1,0 +1,4 @@
+---
+- name: Starting checkboxIO tasks
+  command: "ansible-playbook /home/ubuntu/Devops_Milestone1/Checkboxio/play.yaml"
+  become: yes

@@ -1,0 +1,13 @@
+---
+- hosts: localhost
+  roles:
+    - ec2_local
+- hosts: jenkins
+  roles:
+    - iTrustSetup
+    # - downloadiTrustRepo
+    - downloadcodeRepo
+    - installJenkins
+    - createiTrustJob
+    #- startiTrustJob
+    - startCheckbox

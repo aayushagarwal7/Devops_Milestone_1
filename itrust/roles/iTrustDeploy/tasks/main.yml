@@ -1,0 +1,27 @@
+- name: "Installing maven"
+  apt: package="maven" state="present"
+  become: yes
+
+- name: "Building classes"
+  command: "sudo mvn -f pom-data.xml process-test-classes"
+  args:
+    chdir: "{{ jenkins_itrust_repo }}/iTrust2"
+  become: yes
+
+- name: "Running jetty"
+  shell: "sudo nohup mvn jetty:run &"
+  args:
+    chdir: "{{ jenkins_itrust_repo }}/iTrust2"
+  become: yes
+
+#- name: "Building classes"
+#  command: "mvn process-test-classes"
+#  args:
+#    chdir: "{{ jenkins_itrust_repo }}/iTrust2"
+#  become: yes
+
+#- name: "Running jetty"
+#  command: "sudo nohup mvn jetty:run &"
+#  args:
+#    chdir: "{{ jenkins_itrust_repo }}/iTrust2"
+#  become: yes

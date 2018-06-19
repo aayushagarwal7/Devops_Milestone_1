@@ -1,0 +1,219 @@
+---
+
+- name: Install various dependencies using pip
+  pip:
+    name: "{{ item }}"
+    executable: pip
+  with_items:
+    - jenkins-job-builder
+    - configparser
+    - pyyaml
+    - pbr
+    - python-jenkins
+    - setuptools
+    - ordereddict
+    - boto
+    - boto3
+  become: yes
+
+- name: Adding apt-key for the JDK
+  command: add-apt-repository ppa:ansible/ansible
+  become: yes
+
+- name: Run apt-get update
+  command: apt-get update
+  become: yes
+
+- name: Install ansible
+  apt: name=ansible force=yes state=present
+  become: yes
+
+- name: Clone JJB repo
+  git: repo=https://github.com/openstack-infra/jenkins-job-builder.git dest={{ jjb_git_repo_loc }} clone=yes update=yes force=yes
+  become: yes
+
+- name: Setup JJB
+  command: "python setup.py install"
+  args:
+    chdir: "{{ jjb_git_repo_loc }}"
+  become: yes
+ 
+- name: Adding apt-key for the JDK
+  command: add-apt-repository ppa:webupd8team/java
+  become: yes
+ 
+- name: Accept Oracle License
+  debconf: 
+    name: 'oracle-java8-installer' 
+    question: 'shared/accepted-oracle-license-v1-1' 
+    value: 'true' 
+    vtype: 'select'
+  become : yes
+ 
+- name: Install Java
+  apt:
+    name: oracle-java8-installer    
+    state: present
+  become: yes
+
+- name: Run apt-get update
+  command: apt-get update
+  become: yes
+ 
+- name: Add Jenkins Repository Key
+  apt_key:
+    url: "https://jenkins-ci.org/debian/jenkins-ci.org.key"
+    state: present
+    validate_certs: no
+  become: yes
+
+- name: Add Jenkins Source List
+  shell: echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list
+  become: yes
+
+- name: Run apt-get update
+  command: apt-get update
+  become: yes
+ 
+- name: Install Jenkins
+  apt:
+    name: jenkins    
+    state: present
+  become: yes
+  register: jenkins_install
+
+- name: Run apt-get update
+  command: apt-get update
+  become: yes
+ 
+- name: Paste the config file to AWS
+  template: 
+    src: demo-config.xml.j2 
+    dest: /var/lib/jenkins/config.xml
+  become: yes
+ 
+- name: Enable the firewall
+  ufw:
+    state: enabled
+    policy: allow
+  become: yes
+ 
+- name: Open port for jenkins
+  ufw:
+    rule: allow 
+    port: "{{ jenkins_port }}"
+  become: yes
+
+- name: Restart Jenkins
+  service:
+    name: jenkins
+    state: restarted
+  become: yes
+  when: jenkins_install.changed
+
+- name: Wait for restart
+  uri:
+    url: "http://{{jenkins_ip}}:{{jenkins_port}}/cli/"
+    status_code: 403
+  register: result
+  until: result.status == 403
+  retries: 60
+  delay: 10
+  when: jenkins_install.changed
+
+- name: Create a directory for Groovy
+  file:
+    path: "/var/lib/jenkins/init.groovy.d"
+    state: directory
+    mode: 0777
+  become: yes
+ 
+- name: Create a template xml file for Jenkins checkbox build job
+  template: 
+    src: jenkins_script.groovy.j2 
+    dest: /var/lib/jenkins/init.groovy.d/basic-security.groovy 
+    mode: 0777
+  become: yes
+
+- name: Restart Jenkins 
+  service:
+    name: jenkins
+    state: restarted
+  become: yes
+
+- name: Wait for restart
+  uri:
+    url: "http://{{jenkins_ip}}:{{jenkins_port}}/cli/"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 10
+
+- name: Remove groovy Script
+  file:
+    path: "/var/lib/jenkins/init.groovy.d/basic-security.groovy"
+    state: absent
+  become: yes
+ 
+- name: Install Jenkin Plugins
+  jenkins_plugin:
+    name: "{{ item }}"
+    params: "{{ jenkins }}"
+    url_password: "{{ jenkins_password }}"
+  with_items:
+    - github
+    - postbuildscript
+    - postbuild-task
+    - ws-cleanup
+  become: yes
+ 
+- name: Restart Jenkins
+  service:
+    name: jenkins
+    state: restarted
+  become: yes
+ 
+- name: Wait for restart
+  uri:
+    url: "http://{{jenkins_ip}}:{{jenkins_port}}/cli/"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 10
+
+- name: Transfer all environment variables to the VM
+  blockinfile:
+    path: /etc/environment
+    block: |
+      AWS_ACCESS_KEY_ID="{{lookup('env', 'AWS_ACCESS_KEY_ID')}}"
+      AWS_SECRET_ACCESS_KEY="{{lookup('env', 'AWS_SECRET_ACCESS_KEY')}}"
+      MONGO_PORT="{{lookup('env', 'MONGO_PORT')}}"
+      MONGO_IP="{{lookup('env', 'MONGO_IP')}}"
+      MONGO_USER="{{lookup('env', 'MONGO_USER')}}"
+      MONGO_PASSWORD="{{lookup('env', 'MONGO_PASSWORD')}}"
+      MAIL_USER="{{lookup('env', 'MAIL_USER')}}"
+      MAIL_PASSWORD="{{lookup('env', 'MAIL_PASSWORD')}}"
+      MAIL_SMTP="{{lookup('env', 'MAIL_SMTP')}}"
+      git_username="{{ lookup('env', 'git_username') }}""
+      git_token="{{ lookup('env', 'git_token') }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+  become: yes
+
+- name: Download Jenkins CLI jar file
+  get_url:
+    url: http://{{ jenkins_ip }}:{{ jenkins_port }}/jnlpJars/jenkins-cli.jar
+    dest: '{{ jenkins_cli_jar_loc }}/.'
+
+- name: Give default sudo to jenkins
+  lineinfile:
+    dest: /etc/sudoers
+    line: 'jenkins ALL=(ALL) NOPASSWD: ALL'
+  become: yes
+
+- name: Create ssh key
+  user: name=ubuntu generate_ssh_key=yes  ssh_key_file=.ssh/id_rsa
+  become: yes
+...
+

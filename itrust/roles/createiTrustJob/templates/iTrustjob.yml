@@ -1,0 +1,14 @@
+---
+- job:
+    name: newestiTrust
+    workspace: {{ jenkins_itrust_repo }}
+    builders:
+      - shell: "cd iTrust2 && sudo mvn -f pom-data.xml process-test-classes"
+    publishers:
+      - postbuildscript:
+          mark-unstable-if-failed: true
+          generic-script:
+            - file-path: '/home/ubuntu/Devops_Milestone1/itrust/itrust.sh'
+              role: MASTER
+              build-on:
+                - SUCCESS

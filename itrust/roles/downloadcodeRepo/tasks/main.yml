@@ -1,0 +1,3 @@
+- name: Clone our code repo
+  git: repo=https://{{ git_username }}:{{ git_token }}@github.ncsu.edu/sjain11/Devops_Milestone1.git dest={{ code_repo }} clone=yes update=yes force=yes version=master
+  become: yes

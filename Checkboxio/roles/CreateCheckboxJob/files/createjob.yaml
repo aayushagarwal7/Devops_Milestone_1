@@ -1,0 +1,28 @@
+- scm:
+    name: Checkbox
+    scm:
+      - git:
+          url: https://github.com/sambhavjain204/checkbox.io.git
+          version: canary
+- job:
+    name: 'checkbox.io'
+    description: 'Just to install checkbox'
+    project-type: freestyle
+    scm: 
+      - Checkbox
+    builders:
+      - shell: cd server-side/site && npm install
+    triggers:
+      - github
+    publishers:
+      - postbuildscript:
+          mark-unstable-if-failed: true
+          generic-script:
+            - file-path: '/home/ubuntu/Devops_Milestone1/checkbox.sh'
+              role: MASTER
+              build-on:
+                  - SUCCESS
+                  - file-path: '/home/ubuntu/Devops_Milestone1/checkbox.sh'
+              role: MASTER
+              build-on:
+                  - SUCCESS

@@ -1,0 +1,24 @@
+- scm:
+    name: Checkbox
+    scm:
+      - git:
+          url: https://github.com/chrisparnin/checkbox.io
+- job:
+    name: 'checkbox.io'
+    description: 'Just to install checkbox'
+    project-type: freestyle
+    scm: 
+      - Checkbox
+    builders:
+      - shell: cd server-side/site && npm install
+    publishers: 
+      - post-tasks:
+          script: /home/ubuntu/checkbox.sh
+#      - postbuildscript:
+#          mark-unstable-if-failed: true
+#          generic-script:
+#            - file-path: '/home/ubuntu/checkbox.sh'
+#              role: MASTER
+#              build-on:
+#                  - SUCCESS
+          

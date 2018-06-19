@@ -1,0 +1,21 @@
+- name: "Installing mysql"
+  apt: package="mysql-server" state="present"
+  become: yes
+
+- name: Start the MySQL service
+  service: 
+    name: mysql 
+    state: started
+    enabled: true
+  become: yes
+
+- name: Edit db.properties
+  lineinfile: 
+    dest: "/etc/mysql/mysql.conf.d/mysqld.cnf"
+    regexp: "skip-grant-tables"
+    insertafter: "skip-external-locking"
+    line: "skip-grant-tables"
+  become: yes
+
+- name: Restarting mysql service
+  shell: sudo service mysql restart

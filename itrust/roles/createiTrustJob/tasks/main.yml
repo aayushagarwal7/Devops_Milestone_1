@@ -1,0 +1,23 @@
+---
+- name: Create a directory for Jenkins jobs
+  file:
+    path: "{{ jjb_file_path }}"
+    state: directory
+    mode: 0777
+  become: yes
+
+- name: Transfer ini file
+  template:
+    src: jenkins_jobs.ini
+    dest: "{{jjb_file_path}}/jenkins_jobs.ini"
+  become: yes
+
+- name: Transfer job file
+  template:
+    src: iTrustjob.yml
+    dest: "{{jjb_file_path}}/iTrustjob.yml"
+  become: yes
+
+- name: Create jenkins job for itrust
+  command: jenkins-jobs --conf {{jjb_file_path}}/jenkins_jobs.ini update {{jjb_file_path}}/iTrustjob.yml
+  become: yes

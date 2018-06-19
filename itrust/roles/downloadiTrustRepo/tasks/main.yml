@@ -1,0 +1,22 @@
+---
+- name: Clone iTrust2 repo
+  git: repo=https://{{git_username}}:{{git_token}}@github.ncsu.edu/{{git_username}}/iTrust2-v2.git dest={{ jenkins_itrust_repo }} clone=yes update=yes force=yes
+  become: yes
+
+- name: Renaming required property files
+  command: mv {{ jenkins_itrust_repo }}/iTrust2/src/main/resources/hibernate.properties.template {{ jenkins_itrust_repo }}/iTrust2/src/main/resources/hibernate.properties
+  become: yes
+
+- name: Renaming required property files
+  command: mv {{ jenkins_itrust_repo }}/iTrust2/src/main/java/db.properties.template {{ jenkins_itrust_repo }}/iTrust2/src/main/java/db.properties
+  become: yes
+
+- name: Renaming required property files
+  command: mv {{ jenkins_itrust_repo }}/iTrust2/src/main/java/email.properties.template {{ jenkins_itrust_repo }}/iTrust2/src/main/java/email.properties
+  become: yes
+
+- name: Transfer pom-data file
+  template:
+    src: pom-data.xml
+    dest: "{{ jenkins_itrust_repo }}/iTrust2/pom-data.xml"
+  become: yes

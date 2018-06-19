@@ -1,0 +1,4 @@
+---
+- name: Build Jenkins Job for iTrust
+  become: yes
+  shell: "java -jar {{ jenkins_cli_jar_loc }}/jenkins-cli.jar -s http://{{ jenkins_ip }}:{{ jenkins_port }}/ build {{jenkins_iTrust_job_name}} --username {{jenkins_username}} --password {{jenkins_password}} -s"

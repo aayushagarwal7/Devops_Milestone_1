@@ -1,0 +1,10 @@
+---
+- name: Download Jenkins CLI
+  become: yes
+  get_url:
+    url:  http://127.0.0.1:8080/jnlpJars/jenkins-cli.jar
+    dest: /home/ubuntu
+
+- name: Trigger build
+  become: yes
+  shell: "java -jar /home/ubuntu/jenkins-cli.jar -s http://127.0.0.1:8080/ build checkbox.io --username aayush_test --password 12345678 -s" 

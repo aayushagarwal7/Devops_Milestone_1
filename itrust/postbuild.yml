@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  roles:
+    - ec2_jenkins
+- hosts: jenkins
+  roles: 
+    - iTrustSetup
+    - downloadiTrustRepo
+    - iTrustDeploy

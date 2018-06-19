@@ -1,0 +1,23 @@
+jenkins_ip: localhost
+jenkins_port: 8080
+jenkins_iTrust_job_name: newestiTrust
+jenkins_checkbox_job_name: checkboxJob
+jenkins_cli_jar_loc: /tmp
+jjb_git_repo_loc: /jjb
+
+jjb_file_path: /home/ubuntu/Devops_Milestone1
+
+jenkins_username: aayush_test
+jenkins_password: 12345678
+url_password: "{{jenkins_password}}"
+
+git_username: "{{ lookup('env', 'git_username') }}"
+git_token: "{{ lookup('env', 'git_token') }}"
+
+jenkins_itrust_repo: /home/ubuntu/itrust2
+code_repo: /home/ubuntu/Devops_Milestone1
+checkbox_repo: /home/ubuntu
+jenkins:
+  url_username: "{{jenkins_username}}"
+  url: "http://{{jenkins_ip}}:{{jenkins_port}}"
+  validate_certs: no

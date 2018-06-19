@@ -1,0 +1,4 @@
+---
+- include: Java.yml
+- include: Mysql.yml
+...

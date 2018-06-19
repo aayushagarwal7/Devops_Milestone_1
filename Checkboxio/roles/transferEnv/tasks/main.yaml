@@ -1,0 +1,20 @@
+---
+- name: Transfer all environment variables to the VM
+  blockinfile:
+    path: /etc/environment
+    block: |
+      MONGO_PORT="{{lookup('env', 'MONGO_PORT')}}"
+      MONGO_IP="{{lookup('env', 'MONGO_IP')}}"
+      MONGO_USER="{{lookup('env', 'MONGO_USER')}}"
+      MONGO_PASSWORD="{{lookup('env', 'MONGO_PASSWORD')}}"
+      MAIL_USER="{{lookup('env', 'MAIL_USER')}}"
+      MAIL_PASSWORD="{{lookup('env', 'MAIL_PASSWORD')}}"
+      MAIL_SMTP="{{lookup('env', 'MAIL_SMTP')}}"
+      JENKINS_USER="{{lookup('env', 'JENKINS_USER')}}"
+      JENKINS_PASSWORD="{{lookup('env', 'JENKINS_PASSWORD')}}"
+      AWS_ACCESS_KEY_ID="{{lookup('env', 'AWS_ACCESS_KEY_ID')}}"
+      AWS_SECRET_ACCESS_KEY="{{lookup('env', 'AWS_SECRET_ACCESS_KEY')}}"
+      git_username="{{lookup('env', 'git_username')}}"
+      git_token="{{lookup('env', 'git_token')}}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK"
+  become: yes
